@@ -5,7 +5,7 @@ import discord.ext
 import asyncio
 from googlesearch import search
 
-
+# something
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 tree = discord.app_commands.CommandTree(client)
