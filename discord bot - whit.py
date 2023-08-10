@@ -5,12 +5,17 @@ import discord.ext
 import asyncio
 from googlesearch import search
 
+from dotenv import load_dotenv
+load_dotenv()
+
+
 # something
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 tree = discord.app_commands.CommandTree(client)
 
-ID = os.environ['ID']
+ID = os.getenv("ID")
+
 
 @client.event
 async def on_ready():
@@ -131,7 +136,8 @@ async def vc_ping_remove(interaction: discord.Interaction):
 
 
 # running the bot
-TOKEN = os.environ('token')
+print(os.environ)
+TOKEN = os.environ.get("TOKEN")
 client.run(TOKEN)
 
 
