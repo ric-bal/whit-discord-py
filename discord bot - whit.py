@@ -59,7 +59,12 @@ async def say(interaction: discord.Interaction, text: str):
 # picture
 @tree.command(name="picture", description="Whit will send a random picture")
 async def picture(interaction: discord.Interaction):
-  await interaction.response.send_message(file=discord.File('files/imgs/orange.jpeg'))
+  script_path = os.path.abspath(__file__) # i.e. /path/to/dir/foobar.py
+  script_dir = os.path.split(script_path)[0] #i.e. /path/to/dir/
+  rel_path = "files/imgs/orange.jpeg"
+  abs_file_path = os.path.join(script_dir, rel_path)
+  
+  await interaction.response.send_message(file=discord.File(abs_file_path))
 
 
 
@@ -68,7 +73,12 @@ async def picture(interaction: discord.Interaction):
 @tree.command(name="one-thousand-pings",
               description="Whit will ping a chosen user one thousand times")
 async def pings(interaction: discord.Interaction, user: discord.Member):
-  await interaction.response.send_message(file=discord.File('files/imgs/orange.jpeg'))
+  script_path = os.path.abspath(__file__) # i.e. /path/to/dir/foobar.py
+  script_dir = os.path.split(script_path)[0] #i.e. /path/to/dir/
+  rel_path = "files/imgs/orange.jpeg"
+  abs_file_path = os.path.join(script_dir, rel_path)
+  
+  await interaction.response.send_message(file=discord.File(abs_file_path))
 
 
 
@@ -136,7 +146,6 @@ async def vc_ping_remove(interaction: discord.Interaction):
 
 
 # running the bot
-print(os.environ)
 TOKEN = os.environ.get("TOKEN")
 client.run(TOKEN)
 
