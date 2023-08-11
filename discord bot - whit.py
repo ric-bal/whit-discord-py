@@ -145,6 +145,68 @@ async def vc_ping_remove(interaction: discord.Interaction):
 
 
 
+# entrance music 
+@tree.command(
+  name="toggle-join-audio",
+  description="Whit plays special audio everytime someone joins vc"
+)
+async def entrance_music(interaction: discord.Interaction):
+  global canPlayAudio
+
+  if canPlayAudio:
+    canPlayAudio = False
+  else:
+    canPlayAudio = True
+
+  await interaction.response.send_message("> Play special audio:    " + "`" + str(canPlayAudio) + "`")
+
+
+
+
+# someone joins vc, inclueds special join audio
+canPlayAudio = True
+
+@client.event
+async def on_voice_state_update(member, before, after):
+#client.voice_clients.clear()
+  if not before.channel and after.channel and member != client.user:
+    channel = client.get_channel(1134500945691156560)      # text channel
+    vchannel = member.voice.channel                        # voice channel
+    
+    with open('ping_users.txt', 'r') as file:
+      for row in file:
+        if not row.isspace():
+          await channel.send(row, delete_after=5)
+
+    # special music plays if someone joins vc
+    if canPlayAudio and member != client.user:
+      for vc in client.voice_clients: 
+        if vc.guild == member.guild:
+          await vc.disconnect()
+
+
+      await asyncio.sleep(0.02) # throws errors if not here, i dont know why, dont delete this (if still throwing errors, increase time) 
+      
+      try:
+        voice = await vchannel.connect()
+      except Exception as e:
+        embedVar = discord.Embed(title="ERROR", description=(str(e) + " (Wait a few minutes for discord to fail voice handshake)"), color=discord.Colour.blurple())
+        await channel.send(embed=embedVar)
+
+
+      script_path = os.path.abspath(__file__) # i.e. /path/to/dir/foobar.py
+      script_dir = os.path.split(script_path)[0] #i.e. /path/to/dir/
+      rel_path = "files/sound/clown music.mp3"
+      abs_file_path = os.path.join(script_dir, rel_path)
+      
+      ffmpeg_rel_path = "ffmpeg_bins"
+      ffmpeg_path = os.path.join(script_dir, "ffmpeg_bins/ffmpeg")
+
+      source = discord.FFmpegPCMAudio(executable=ffmpeg_path,source=abs_file_path)
+      player = voice.play(source)
+
+
+
 # running the bot
 TOKEN = os.environ.get("TOKEN")
 client.run(TOKEN)
@@ -154,15 +216,16 @@ client.run(TOKEN)
 
 
 
+
+
+
 """
-# entrance music
+# get whit into vc
 @tree.command(
-  name="entrance-music",
-  description="Whit plays audio everytime someone joins vc"
+  name="join-vc",
+  description="Whit joins vc"
 )
-async def entrance_music(interaction: discord.Interaction):
-  global canPlayMusic
-  
+async def join(interaction: discord.Interaction):  
   try:
     channel = interaction.user.voice.channel
   except AttributeError:
@@ -178,53 +241,6 @@ async def entrance_music(interaction: discord.Interaction):
 
   await channel.connect()
   await interaction.response.send_message("Joined vc", ephemeral=True)
-
-
-
-# someone joins vc, inclueds special join audio
-@client.event
-async def on_voice_state_update(member, before, after):
-  if not before.channel and after.channel:
-    channel = client.get_channel(1134500945691156560)      # text channel
-    vchannel = member.voice.channel                        # voice channel
-    
-    with open('ping_users.txt', 'r') as file:
-      for row in file:
-        if not row.isspace():
-          await channel.send(row, delete_after=5)
-
-    if canPlayAudio and member != client.user:
-      for vc in client.voice_clients:
-        if vc.guild == member.guild:
-          await vc.disconnect()
-
-      await asyncio.sleep(0.02) # throws errors if not here, i dont know why, dont delete this (if still throwing errors, increase time)
-      
-      voice = await vchannel.connect()
-      voice.play(discord.FFmpegPCMAudio('files/sound/clown music.mp3'))
-
-
-
-
-
-
-
-
-
-# entrance music 
-@tree.command(
-  name="toggle-join-audio",
-  description="Whit plays special audio everytime someone joins vc"
-)
-async def entrance_music(interaction: discord.Interaction):
-  global canPlayAudio
-
-  if canPlayAudio:
-    canPlayAudio = False
-  else:
-    canPlayAudio = True
-
-  await interaction.response.send_message("Play special audio:      " + "**" + str(canPlayAudio) + "**")
 
 """
 
