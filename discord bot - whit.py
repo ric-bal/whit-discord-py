@@ -28,10 +28,6 @@ async def on_ready():
   except Exception as e:
     print(e)
 
-  await client.change_presence(
-    activity=discord.Activity(type=discord.ActivityType.listening,
-                              name="hold music")
-  )  # apparently not meant to do this but couldnt find another way (delete if something goes wrong)
 
 
 
@@ -145,7 +141,7 @@ async def vc_ping_remove(interaction: discord.Interaction):
 
 
 
-# entrance music 
+# toggle entrance music 
 @tree.command(
   name="toggle-join-audio",
   description="Whit plays special audio everytime someone joins vc"
@@ -158,7 +154,7 @@ async def entrance_music(interaction: discord.Interaction):
   else:
     canPlayAudio = True
 
-  await interaction.response.send_message("> Play special audio:    " + "`" + str(canPlayAudio) + "`")
+  await interaction.response.send_message("> Play join audio:    " + "`" + str(canPlayAudio) + "`")
 
 
 
@@ -168,8 +164,17 @@ canPlayAudio = True
 
 @client.event
 async def on_voice_state_update(member, before, after):
-#client.voice_clients.clear()
-  if not before.channel and after.channel and member != client.user:
+  if member != client.user:
+    if len(client.voice_clients) == 1:      # disconnect if vc is empty (triggered whenever someone joins/leaves)
+      for vc in client.voice_clients: 
+        if vc.guild == member.guild:
+          await vc.disconnect()
+
+
+  if member == client.user:
+    return
+  
+  if not before.channel and after.channel:
     channel = client.get_channel(1134500945691156560)      # text channel
     vchannel = member.voice.channel                        # voice channel
     
@@ -179,7 +184,7 @@ async def on_voice_state_update(member, before, after):
           await channel.send(row, delete_after=5)
 
     # special music plays if someone joins vc
-    if canPlayAudio and member != client.user:
+    if canPlayAudio:
       for vc in client.voice_clients: 
         if vc.guild == member.guild:
           await vc.disconnect()
@@ -199,10 +204,10 @@ async def on_voice_state_update(member, before, after):
       rel_path = "files/sound/clown music.mp3"
       abs_file_path = os.path.join(script_dir, rel_path)
       
-      ffmpeg_rel_path = "ffmpeg_bins"
+      #ffmpeg_rel_path = "ffmpeg_bins"
       ffmpeg_path = os.path.join(script_dir, "ffmpeg_bins/ffmpeg")
 
-      source = discord.FFmpegPCMAudio(executable=ffmpeg_path,source=abs_file_path)
+      source = discord.FFmpegPCMAudio(executable=ffmpeg_path, source=abs_file_path)
       player = voice.play(source)
 
 
@@ -211,7 +216,7 @@ async def on_voice_state_update(member, before, after):
 TOKEN = os.environ.get("TOKEN")
 client.run(TOKEN)
 
-
+client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="hold music"))
 
 
 
