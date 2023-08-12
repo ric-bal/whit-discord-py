@@ -4,6 +4,7 @@ from discord import FFmpegPCMAudio
 import discord.ext
 import asyncio
 from googlesearch import search
+import random
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -39,7 +40,7 @@ async def on_ready():
 @tree.command(name="hello", description="Say hello to Whit")
 async def hello(interaction: discord.Interaction):
   await interaction.response.send_message(
-    f"Sending 2TB zip bomb to user {interaction.user.mention}")
+    f"Sending 2PB zip bomb to user {interaction.user.mention}")
 
 
 
@@ -96,7 +97,50 @@ async def dont_google(interaction: discord.Interaction,
 
 
 
-#vc ping add
+# spin the wheel
+@tree.command(
+  name="spin-the-wheel",
+  description=
+  "Whit randomly chooses an item from a list of items. (( IMPORTANT: Separate items with a comma ))"
+)
+async def spin(interaction: discord.Interaction,
+                      list: str):
+  list = list.split(',')
+  new_list = []
+  for item in list:
+    item = item.strip()
+    new_list.append(item)
+
+  random_num = random.randint(0, len(new_list) - 1)
+  joined_list = ', '.join(new_list)
+
+
+  script_path = os.path.abspath(__file__) # i.e. /path/to/dir/foobar.py
+  script_dir = os.path.split(script_path)[0] #i.e. /path/to/dir/
+  rel_path = "files/imgs/spin the wheel.png" #"files/imgs/spin the wheel.png"
+  abs_file_path = os.path.join(script_dir, rel_path)
+
+  file = discord.File(abs_file_path, filename="image.png")
+
+
+  embedVar = discord.Embed(title=new_list[random_num] + "!", 
+                           color=discord.Colour.blurple())
+  embedVar.add_field(name="Possible Choices   ", 
+                     value=joined_list, 
+                     inline=True)
+  embedVar.add_field(name="Result", 
+                     value=new_list[random_num], 
+                     inline=True)
+  embedVar.set_image(url="attachment://image.png")
+
+
+  await interaction.response.send_message(file=file, embed=embedVar)
+
+
+
+
+
+# vc ping add
 @tree.command(name="add-vc-ping",
               description="Whit will ping you if someone joins vc")
 async def vc_ping_add(interaction: discord.Interaction):
@@ -115,7 +159,7 @@ async def vc_ping_add(interaction: discord.Interaction):
   await interaction.response.send_message("You're already in the list", ephemeral=True)
 
 
-#vc ping remove
+# vc ping remove
 @tree.command(name="remove-vc-ping",
               description="Whit will remove you from the vc ping list")
 async def vc_ping_remove(interaction: discord.Interaction):
