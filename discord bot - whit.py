@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 import discord
 from discord import FFmpegPCMAudio
 import discord.ext
@@ -30,6 +31,45 @@ async def on_ready():
     print(e)
 
 
+
+# spin the wheel embed and button
+new_list = []
+
+def setNewList(l): # set new list, called from 'spin the wheel' slash command 
+  global new_list
+  new_list = l
+
+class SpinAgainButton(discord.ui.View):
+  def __init__(self):
+    super().__init__()
+
+  @discord.ui.button(label="Spin Again", style=discord.ButtonStyle.blurple)
+  async def rollButton(self, interaction: discord.Interaction, button: discord.ui.Button):
+    random_num = random.randint(0, len(new_list) - 1)
+    joined_list = ', '.join(new_list)
+
+
+    script_path = os.path.abspath(__file__) # i.e. /path/to/dir/foobar.py
+    script_dir = os.path.split(script_path)[0] #i.e. /path/to/dir/
+    rel_path = "files/imgs/spin the wheel.png" #"files/imgs/spin the wheel.png"
+    abs_file_path = os.path.join(script_dir, rel_path)
+
+    file = discord.File(abs_file_path, filename="image.png")
+
+
+    embedVar = discord.Embed(title=new_list[random_num] + "!", 
+                            color=discord.Colour.blurple())
+    embedVar.add_field(name="Possible Choices   ", 
+                      value=joined_list, 
+                      inline=True)
+    embedVar.add_field(name="Result", 
+                      value=new_list[random_num], 
+                      inline=True)
+    embedVar.set_image(url="attachment://image.png")
+
+    await interaction.response.send_message(file=file, embed=embedVar)
+    await interaction.channel.send(view=SpinAgainButton())
+  
 
 
 # ------------------------------  COMMANDS ---------------------------------------------
@@ -106,7 +146,7 @@ async def dont_google(interaction: discord.Interaction,
 async def spin(interaction: discord.Interaction,
                       list: str):
   list = list.split(',')
-  new_list = []
+  new_list = []           # defined above wheel spin class button (scroll up)
   for item in list:
     item = item.strip()
     new_list.append(item)
@@ -133,8 +173,9 @@ async def spin(interaction: discord.Interaction,
                      inline=True)
   embedVar.set_image(url="attachment://image.png")
 
-
+  setNewList(new_list)
   await interaction.response.send_message(file=file, embed=embedVar)
+  await interaction.channel.send(view=SpinAgainButton())
 
 
 
