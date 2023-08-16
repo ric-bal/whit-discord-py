@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-# something
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 tree = discord.app_commands.CommandTree(client)
@@ -35,9 +34,9 @@ async def on_ready():
 # spin the wheel embed and button
 new_list = []
 
-def setNewList(l): # set new list, called from 'spin the wheel' slash command 
+def setNewList(items): # set new list, called from 'spin the wheel' slash command 
   global new_list
-  new_list = l
+  new_list = items
 
 class SpinAgainButton(discord.ui.View):
   def __init__(self):
@@ -67,7 +66,8 @@ class SpinAgainButton(discord.ui.View):
                       inline=True)
     embedVar.set_image(url="attachment://image.png")
 
-    await interaction.response.send_message(file=file, embed=embedVar)
+    await interaction.message.delete()
+    await interaction.channel.send(file=file, embed=embedVar)
     await interaction.channel.send(view=SpinAgainButton())
   
 
@@ -239,7 +239,8 @@ async def entrance_music(interaction: discord.Interaction):
   else:
     canPlayAudio = True
 
-  await interaction.response.send_message("> Play join audio:    " + "`" + str(canPlayAudio) + "`")
+  embedVar = discord.Embed(title="TOGGLE", description="Play join audio:    " + "`" + str(canPlayAudio) + "`", color=discord.Colour.blurple())
+  await interaction.response.send_message(embed=embedVar)
 
 
 
@@ -249,10 +250,22 @@ canPlayAudio = True
 
 @client.event
 async def on_voice_state_update(member, before, after):
-  if member != client.user:
+  # determining sound file path
+  script_path = os.path.abspath(__file__) # i.e. /path/to/dir/foobar.py
+  script_dir = os.path.split(script_path)[0] #i.e. /path/to/dir/
+  rel_path = "files/sound/clown music.mp3"
+  abs_file_path = os.path.join(script_dir, rel_path)
+
+  ffmpeg_path = os.path.join(script_dir, "ffmpeg_bins/ffmpeg")
+
+  if member != client.user and before.channel != after.channel:
     if len(client.voice_clients) == 1:      # disconnect if vc is empty (triggered whenever someone joins/leaves)
       for vc in client.voice_clients: 
         if vc.guild == member.guild:
+          source = discord.FFmpegPCMAudio(executable=ffmpeg_path, source=abs_file_path, before_options="-ss 00:02:31:99") # easy way to terminate ffmpeg player, skips to almost end of song
+          player = vc.pause()
+          player = vc.play(source)
+          await asyncio.sleep(0.01)
           await vc.disconnect()
 
 
@@ -263,6 +276,7 @@ async def on_voice_state_update(member, before, after):
     channel = client.get_channel(1134500945691156560)      # text channel
     vchannel = member.voice.channel                        # voice channel
     
+    # ping users if someone joined vc
     with open('ping_users.txt', 'r') as file:
       for row in file:
         if not row.isspace():
@@ -283,18 +297,9 @@ async def on_voice_state_update(member, before, after):
         embedVar = discord.Embed(title="ERROR", description=(str(e) + " (Wait a few minutes for discord to fail voice handshake)"), color=discord.Colour.blurple())
         await channel.send(embed=embedVar)
 
-
-      script_path = os.path.abspath(__file__) # i.e. /path/to/dir/foobar.py
-      script_dir = os.path.split(script_path)[0] #i.e. /path/to/dir/
-      rel_path = "files/sound/clown music.mp3"
-      abs_file_path = os.path.join(script_dir, rel_path)
-      
-      #ffmpeg_rel_path = "ffmpeg_bins"
-      ffmpeg_path = os.path.join(script_dir, "ffmpeg_bins/ffmpeg")
-
       source = discord.FFmpegPCMAudio(executable=ffmpeg_path, source=abs_file_path)
       player = voice.play(source)
-
+      
 
 
 # running the bot
