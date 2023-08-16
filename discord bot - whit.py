@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-# something
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 tree = discord.app_commands.CommandTree(client)
@@ -35,9 +34,9 @@ async def on_ready():
 # spin the wheel embed and button
 new_list = []
 
-def setNewList(l): # set new list, called from 'spin the wheel' slash command 
+def setNewList(items): # set new list, called from 'spin the wheel' slash command 
   global new_list
-  new_list = l
+  new_list = items
 
 class SpinAgainButton(discord.ui.View):
   def __init__(self):
@@ -67,7 +66,8 @@ class SpinAgainButton(discord.ui.View):
                       inline=True)
     embedVar.set_image(url="attachment://image.png")
 
-    await interaction.response.send_message(file=file, embed=embedVar)
+    await interaction.message.delete()
+    await interaction.channel.send(file=file, embed=embedVar)
     await interaction.channel.send(view=SpinAgainButton())
   
 
