@@ -1,4 +1,5 @@
 # whit-discord-py
+discord bot using discord.py API wrapper <br><br>
 originally started 28/07/23 on an online IDE <br />
 caused problems so now hosted locally + source code here <br />
 <hr>
